@@ -50,12 +50,12 @@ diplomski_kod/
 ├── run_core_experiment.py      manji osnovni eksperiment
 ├── run_ccef_experiment.py      kompletan paralelni CCEF eksperiment
 ├── plot_ccef_vs_portef.py      vizuelno poređenje CCEF i UEF rezultata
-└── archive/                    raniji operatori, eksperimenti i njihovi rezultati
+└── requirements.txt            Python zavisnosti projekta
 ```
 
 Datoteke `port1.txt`–`port5.txt` sadrže broj hartija, očekivani prinos i standardnu devijaciju svake hartije, a zatim gornji trougao korelacione matrice. Pri učitavanju se izračunava kovarijaciona matrica `cov[i,j] = corr[i,j] · sigma[i] · sigma[j]`.
 
-Datoteke `portef1.txt`–`portef5.txt` sadrže po 2.000 tačaka nekonstruisane efikasne granice kao parove očekivani prinos–varijansa. Varijansa se pri učitavanju pretvara u standardnu devijaciju.
+Datoteke `portef1.txt`–`portef5.txt` sadrže po 2.000 tačaka efikasne granice bez ograničenja kardinalnosti kao parove očekivani prinos–varijansa. Varijansa se pri učitavanju pretvara u standardnu devijaciju.
 
 ## Zahtevi i instalacija
 
@@ -67,7 +67,7 @@ PowerShell, Windows:
 py -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
-python -m pip install numpy scipy matplotlib
+python -m pip install -r requirements.txt
 ```
 
 Linux ili macOS:
@@ -76,7 +76,7 @@ Linux ili macOS:
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
-python -m pip install numpy scipy matplotlib
+python -m pip install -r requirements.txt
 ```
 
 Skripte treba pokretati iz korena projekta, jer se relativne putanje do `data/`, `src/` i `results/` određuju u odnosu na njihovu lokaciju.
@@ -200,6 +200,8 @@ Izlazi su:
 - `results/ccef_best.csv` — najbolje pokretanje za svaki par skupa i `λ`;
 - `results/ccef_errors.log` — traceback neuspešnih poslova, ako ih bude.
 
+Repozitorijum već sadrži završne CSV rezultate, rezultat osnovnog eksperimenta i generisani grafikon `results/ccef_vs_portef.png`, tako da se dobijeni rezultati mogu pregledati i bez ponovnog pokretanja dugog eksperimenta.
+
 Eksperiment podržava nastavak rada. Pre pokretanja čita postojeći `ccef_results.csv` i preskače već završene kombinacije skupa, `λ` i semena. Ako je potreban potpuno nov eksperiment, prethodni CSV treba sačuvati pod drugim imenom ili premestiti iz `results/`.
 
 Kolone rezultata znače:
@@ -245,18 +247,16 @@ Percentage-deviation Error meri udaljenost CCEF tačke `(standardna devijacija, 
 
 ## Direktne provere modula
 
-Moduli `crossover.py` i `repair.py` imaju samostalne sanity provere:
+Moduli imaju samostalne sanity provere i koriste podatke iz projektnog direktorijuma `data/`:
 
 ```powershell
 python src/crossover.py
 python src/repair.py
+python src/data_loader.py
+python src/local_search.py
+python src/memetic_ga.py
+python src/uef_benchmark.py
 ```
-
-`data_loader.py`, `local_search.py`, `memetic_ga.py` i `uef_benchmark.py` sadrže razvojne ulazne blokove, ali koriste istorijsku podrazumevanu putanju do podataka. Glavni eksperimentalni skriptovi eksplicitno prosleđuju projektnu putanju `data/` i zato su preporučeni način korišćenja.
-
-## Arhivirani eksperimenti
-
-Direktorijum `archive/` čuva pokušaje sa correlation-guided i Sharpe-guided repair operatorima, kao i intersection-fill crossover. Prema sačuvanim poređenjima, ove varijante su na uparenom Wilcoxon signed-rank testu bile lošije od jednostavnog modela sa uniformnim crossoverom i nasumičnom popravkom. Fajlovi su zadržani kao prateći materijal za diskusiju rezultata, ali nisu deo preporučenog toka pokretanja.
 
 ## Reproduktivnost i praktične napomene
 

@@ -13,6 +13,8 @@ DATASET_NAMES = {
     "port5": "Nikkei 225",
 }
 
+DEFAULT_DATA_DIR = Path(__file__).resolve().parent.parent / "data"
+
 
 @dataclass
 class PortfolioData:
@@ -80,9 +82,8 @@ def load_port_file(path: str | Path) -> PortfolioData:
     )
 
 
-def load_all(data_dir: str | Path = "/home/claude/diplomski/data") -> dict[str, PortfolioData]:
-
-    data_dir = Path(data_dir)
+def load_all(data_dir: str | Path | None = None) -> dict[str, PortfolioData]:
+    data_dir = Path(data_dir) if data_dir is not None else DEFAULT_DATA_DIR
     result = {}
     for i in range(1, 6):
         fname = data_dir / f"port{i}.txt"

@@ -27,6 +27,8 @@ import numpy as np
 from pathlib import Path
 from dataclasses import dataclass
 
+DEFAULT_DATA_DIR = Path(__file__).resolve().parent.parent / "data"
+
 @dataclass
 class UEFCurve:
     name: str                            
@@ -53,9 +55,8 @@ def load_portef_file(path: str | Path) -> UEFCurve:
     return UEFCurve(name=path.stem, returns=returns, std_devs=std_devs)
 
 
-def load_all_uef(data_dir: str | Path = "/home/claude/diplomski/data") -> dict[str, UEFCurve]:
-
-    data_dir = Path(data_dir)
+def load_all_uef(data_dir: str | Path | None = None) -> dict[str, UEFCurve]:
+    data_dir = Path(data_dir) if data_dir is not None else DEFAULT_DATA_DIR
     result = {}
     for i in range(1, 6):
         fname = data_dir / f"portef{i}.txt"

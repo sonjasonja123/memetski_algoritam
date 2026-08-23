@@ -101,6 +101,8 @@ def solve_weights(
 
 
 if __name__ == "__main__":
+    from data_loader import load_all
+
     datasets = load_all()
     d = datasets["port1"]
 
