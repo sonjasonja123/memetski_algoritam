@@ -265,3 +265,39 @@ python src/uef_benchmark.py
 - `λ=0` optimizuje samo prinos, a `λ=1` samo varijansu.
 - Na Windows-u je multiprocessing zaštićen odgovarajućim `if __name__ == "__main__"` ulazom i koristi `freeze_support()`.
 - Postojeći `ccef_results.csv` utiče na resume mehanizam; proveriti ga pre promene konfiguracije eksperimenta.
+
+## Izolovani eksperiment sa surogat fitnesom
+
+Dodatni eksperiment u `src/surrogate_ga.py` meri doprinos samo genetskog dela
+algoritma. On ne menja postojeći memetski algoritam: umesto SLSQP-a koristi
+jednake težine `1/K` i originalnu ciljnu funkciju. Rezultat se poredi sa čistom
+random pretragom uz isti broj zahteva za evaluaciju. Keš je zaseban za svako
+pokretanje i koristi sortirani tuple izabranih asseta zajedno sa lambda
+vrednošću.
+
+Podrazumevana mreža sadrži svih pet skupova, pet lambda vrednosti, populacije
+10 i 15, `pm` vrednosti 0.10–0.30 i 30 semena. Pokretanje i analiza:
+
+```powershell
+python run_surrogate_experiment.py
+python analyze_surrogate_experiment.py
+python benchmark_surrogate_speed.py
+```
+
+Runner incrementalno dopisuje rezultate i nastavlja nepotpun eksperiment.
+Opseg se može ograničiti promenljivama `SURROGATE_DATASETS`,
+`SURROGATE_LAMBDAS`, `SURROGATE_POP_SIZES`, `SURROGATE_PM` i
+`SURROGATE_N_SEEDS`, na isti način kao kod CCEF eksperimenta.
+
+Izlazi su:
+
+- `results/surrogate_results.csv` — pojedinačni GA i random rezultati;
+- `results/surrogate_wilcoxon.csv` — jednostrani upareni Wilcoxon testovi i
+  Holm-korigovane p-vrednosti;
+- `results/surrogate_speed.csv` — poređenje vremena surogata i SLSQP-a;
+- `results/surrogate_summary.md` — sažetak kompletnog eksperimenta.
+
+Budžet obe metode je `pop_size + n_generations * (pop_size - elitism)`. To je
+stvarni broj novih kandidata koje GA ocenjuje: početna populacija i svi
+neelitni potomci. Random kontrola bira `K=10` različitih asseta direktno, pa
+joj repair nije potreban.
