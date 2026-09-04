@@ -1,20 +1,12 @@
-
-
-
-
-
-
 from __future__ import annotations
 
 import time
 from dataclasses import dataclass, field
-
 import numpy as np
-
 from crossover import uniform_crossover
 from local_search import solve_weights
 from repair import random_repair
-
+from data_loader import load_all
 
 @dataclass
 class GAConfig:
@@ -139,7 +131,6 @@ def run_memetic_ga(
 
 
 if __name__ == "__main__":
-    from data_loader import load_all
 
     data = load_all()["port1"]
     test_config = GAConfig(k=10, lam=0.5, seed=42)
