@@ -39,7 +39,7 @@ Manja vrednost fitness funkcije označava bolje rešenje.
 ```text
 diplomski_kod/
 ├── data/                       OR-Library ulazni podaci i UEF krive
-├── results/                    CSV rezultati, grafici i eventualni log grešaka
+├── results/                    CSV rezultati i grafik SAMO glavnog CCEF eksperimenta
 ├── src/
 │   ├── data_loader.py          učitavanje port1–port5 skupova
 │   ├── crossover.py            uniformni crossover
@@ -47,11 +47,24 @@ diplomski_kod/
 │   ├── local_search.py         SLSQP optimizacija težina
 │   ├── memetic_ga.py           glavni memetski algoritam
 │   └── uef_benchmark.py        UEF učitavanje i PE metrika
+├── experiments/                 sweep eksperimenti (parametri, ne glavni model)
+│   ├── common.py                zajednička infrastruktura svih sweep-ova
+│   ├── generations_sweep/
+│   ├── pm_sweep_high/
+│   ├── pm_sweep_low/
+│   ├── popsize_sweep/
+│   ├── combined_verification/
+│   ├── surrogate_fitness/
+│   └── SUMMARY.md                pregled svih eksperimenata
 ├── run_core_experiment.py      manji osnovni eksperiment
 ├── run_ccef_experiment.py      kompletan paralelni CCEF eksperiment
 ├── plot_ccef_vs_portef.py      vizuelno poređenje CCEF i UEF rezultata
 └── requirements.txt            Python zavisnosti projekta
 ```
+
+Svaki `experiments/<naziv>/` sadrži `run.py`, `analyze.py`, sirove CSV
+rezultate (`results.csv`, `wilcoxon.csv`), `README.md` (kako pokrenuti) i
+`FINDINGS.md` (šta je nađeno) — videti [experiments/SUMMARY.md](experiments/SUMMARY.md).
 
 Datoteke `port1.txt`–`port5.txt` sadrže broj hartija, očekivani prinos i standardnu devijaciju svake hartije, a zatim gornji trougao korelacione matrice. Pri učitavanju se izračunava kovarijaciona matrica `cov[i,j] = corr[i,j] · sigma[i] · sigma[j]`.
 
@@ -171,6 +184,28 @@ broj skupova · broj lambda vrednosti · broj semena
 
 Posle promene parametara kompletnog eksperimenta treba premestiti ili preimenovati postojeći `results/ccef_results.csv`. U suprotnom resume mehanizam može preskočiti kombinacije koje su već zabeležene sa starom konfiguracijom, jer CSV ključ sadrži samo skup, lambda vrednost i seme, a ne sadrži `K`, `eps`, `delta`, veličinu populacije i ostale GA parametre.
 
+## Parametri glavnog modela i njihovo poreklo
+
+Finalni parametri u `run_ccef_experiment.py` i `src/memetic_ga.py`
+(`GAConfig` default vrednosti) nisu proizvoljno izabrani — svaki je proveren
+kroz eksperiment u `experiments/`. Ova tabela povezuje svaki parametar sa
+eksperimentom koji opravdava vrednost:
+
+| Parametar u kodu | Vrednost | Gde se koristi | Eksperiment koji opravdava vrednost |
+|---|---:|---|---|
+| `N_GENERATIONS` | 100 | `run_ccef_experiment.py`, `GAConfig.n_generations` | [`experiments/generations_sweep/`](experiments/generations_sweep/) |
+| `POP_SIZE` | 50 | isto, `GAConfig.pop_size` | [`experiments/popsize_sweep/`](experiments/popsize_sweep/) + [`experiments/combined_verification/`](experiments/combined_verification/) (zašto NIJE promenjeno na 100) |
+| `PM` | 0.15 | isto, `GAConfig.pm` | [`experiments/pm_sweep_high/`](experiments/pm_sweep_high/), [`experiments/pm_sweep_low/`](experiments/pm_sweep_low/) + [`experiments/combined_verification/`](experiments/combined_verification/) (zašto NIJE promenjeno na 0.02) |
+| `DELTA` | 0.15 | isto, `GAConfig.delta` | (validacija naspram Chang et al., videti glavni tekst rada) |
+
+Za `POP_SIZE` i `PM`, pojedinačni sweep je sugerisao drugu vrednost (100,
+odnosno 0.02) od one koja se koristi u finalnom modelu — referenca na
+[`experiments/combined_verification/FINDINGS.md`](experiments/combined_verification/FINDINGS.md)
+objašnjava zašto originalna vrednost ostaje: kad se obe "bolje" izolovane
+vrednosti primene zajedno na finalnoj pozadinskoj konfiguraciji, poboljšanje
+nije statistički značajno. Videti i [`experiments/SUMMARY.md`](experiments/SUMMARY.md)
+za pregled svih eksperimenata.
+
 ## Kompletan CCEF eksperiment
 
 ```powershell
@@ -275,13 +310,16 @@ random pretragom uz isti broj zahteva za evaluaciju. Keš je zaseban za svako
 pokretanje i koristi sortirani tuple izabranih asseta zajedno sa lambda
 vrednošću.
 
-Podrazumevana mreža sadrži svih pet skupova, pet lambda vrednosti, populacije
-10 i 15, `pm` vrednosti 0.10–0.30 i 30 semena. Pokretanje i analiza:
+Eksperiment živi u `experiments/surrogate_fitness/` (videti
+[experiments/surrogate_fitness/README.md](experiments/surrogate_fitness/README.md)
+za pun opis). Podrazumevana mreža sadrži svih pet skupova, pet lambda
+vrednosti, populacije 10 i 15, `pm` vrednosti 0.10–0.30 i 30 semena.
+Pokretanje i analiza:
 
 ```powershell
-python run_surrogate_experiment.py
-python analyze_surrogate_experiment.py
-python benchmark_surrogate_speed.py
+python experiments/surrogate_fitness/run.py
+python experiments/surrogate_fitness/analyze.py
+python experiments/surrogate_fitness/benchmark_speed.py
 ```
 
 Runner incrementalno dopisuje rezultate i nastavlja nepotpun eksperiment.
@@ -291,11 +329,11 @@ Opseg se može ograničiti promenljivama `SURROGATE_DATASETS`,
 
 Izlazi su:
 
-- `results/surrogate_results.csv` — pojedinačni GA i random rezultati;
-- `results/surrogate_wilcoxon.csv` — jednostrani upareni Wilcoxon testovi i
+- `experiments/surrogate_fitness/results.csv` — pojedinačni GA i random rezultati;
+- `experiments/surrogate_fitness/wilcoxon.csv` — jednostrani upareni Wilcoxon testovi i
   Holm-korigovane p-vrednosti;
-- `results/surrogate_speed.csv` — poređenje vremena surogata i SLSQP-a;
-- `results/surrogate_summary.md` — sažetak kompletnog eksperimenta.
+- `experiments/surrogate_fitness/speed.csv` — poređenje vremena surogata i SLSQP-a;
+- `experiments/surrogate_fitness/FINDINGS.md` — sažetak kompletnog eksperimenta.
 
 Budžet obe metode je `pop_size + n_generations * (pop_size - elitism)`. To je
 stvarni broj novih kandidata koje GA ocenjuje: početna populacija i svi
