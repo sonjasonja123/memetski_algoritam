@@ -9,7 +9,7 @@ import traceback
 from pathlib import Path
 
 
-ROOT_DIR = Path(__file__).parent
+ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT_DIR / "src"))
 
 from data_loader import load_all
@@ -28,9 +28,9 @@ ELITISM = 1
 TOURNAMENT_SIZE = 2
 NUM_WORKERS = None
 
-RESULTS_DIR = ROOT_DIR / "results"
-OUTPUT_CSV = RESULTS_DIR / "surrogate_results.csv"
-ERROR_LOG = RESULTS_DIR / "surrogate_errors.log"
+RESULTS_DIR = Path(__file__).resolve().parent
+OUTPUT_CSV = RESULTS_DIR / "results.csv"
+ERROR_LOG = RESULTS_DIR / "errors.log"
 FIELDNAMES = [
     "dataset", "lambda", "pop_size", "pm", "seed", "method",
     "best_fitness", "selected_assets", "n_requests", "n_evaluations",

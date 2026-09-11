@@ -24,5 +24,5 @@ Prosečan hit rate GA keša je 64.0%, dok je kod random kontrole praktično 0%,
 istih portfolija po skupu i lambda vrednosti pokazuje medijalno ubrzanje
 surogat evaluacije od 189.8× u odnosu na SLSQP (raspon 95.3×–385.8×).
 
-Detaljni i reproduktivni rezultati nalaze se u `surrogate_results.csv`,
-`surrogate_wilcoxon.csv` i `surrogate_speed.csv`.
+Detaljni i reproduktivni rezultati nalaze se u `results.csv`,
+`wilcoxon.csv` i `speed.csv`.

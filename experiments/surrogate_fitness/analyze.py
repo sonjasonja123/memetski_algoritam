@@ -1,16 +1,19 @@
 from __future__ import annotations
 
 import csv
+import sys
 from collections import defaultdict
 from pathlib import Path
 
 import numpy as np
 from scipy.stats import wilcoxon
 
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+import common
 
-ROOT_DIR = Path(__file__).parent
-INPUT_CSV = ROOT_DIR / "results" / "surrogate_results.csv"
-OUTPUT_CSV = ROOT_DIR / "results" / "surrogate_wilcoxon.csv"
+ROOT_DIR = Path(__file__).resolve().parent
+INPUT_CSV = ROOT_DIR / "results.csv"
+OUTPUT_CSV = ROOT_DIR / "wilcoxon.csv"
 FIELDNAMES = [
     "dataset", "lambda", "pop_size", "pm", "n_pairs", "ga_wins",
     "ties", "random_wins", "ga_median_fitness", "random_median_fitness",
@@ -18,17 +21,6 @@ FIELDNAMES = [
     "significant_0_05_holm", "ga_mean_hit_rate", "random_mean_hit_rate",
     "ga_mean_seconds", "random_mean_seconds",
 ]
-
-
-def _holm_adjust(p_values: list[float]) -> list[float]:
-    count = len(p_values)
-    order = np.argsort(p_values)
-    adjusted = np.empty(count)
-    running = 0.0
-    for rank, index in enumerate(order):
-        running = max(running, (count - rank) * p_values[index])
-        adjusted[index] = min(1.0, running)
-    return adjusted.tolist()
 
 
 def main() -> None:
@@ -69,7 +61,7 @@ def main() -> None:
             "random_mean_seconds": float(np.mean([float(pair["random"]["elapsed_seconds"]) for pair in pairs])),
         })
 
-    adjusted = _holm_adjust([row["p_value_one_sided"] for row in results])
+    adjusted = common.holm_adjust([row["p_value_one_sided"] for row in results])
     for row, value in zip(results, adjusted):
         row["p_value_holm"] = value
         row["significant_0_05_holm"] = value < 0.05

@@ -8,7 +8,7 @@ from pathlib import Path
 import numpy as np
 
 
-ROOT_DIR = Path(__file__).parent
+ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT_DIR / "src"))
 
 from data_loader import load_all
@@ -20,7 +20,7 @@ DATASETS = ["port1", "port2", "port3", "port4", "port5"]
 LAMBDAS = [0.1, 0.3, 0.5, 0.7, 0.9]
 K = 10
 N_SAMPLES = 30
-OUTPUT_CSV = ROOT_DIR / "results" / "surrogate_speed.csv"
+OUTPUT_CSV = Path(__file__).resolve().parent / "surrogate_speed.csv"
 FIELDNAMES = [
     "dataset", "lambda", "n_samples", "surrogate_seconds",
     "slsqp_seconds", "speedup",
