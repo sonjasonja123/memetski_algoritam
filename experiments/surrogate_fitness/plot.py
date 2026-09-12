@@ -10,7 +10,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-ROOT_DIR = Path(__file__).resolve().parent
+RESULTS_DIR = Path(__file__).resolve().parent
+ROOT_DIR = RESULTS_DIR.parent.parent
 sys.path.insert(0, str(ROOT_DIR / "src"))
 
 from data_loader import load_all
@@ -31,12 +32,12 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--results", type=Path,
-        default=ROOT_DIR / "results" / "surrogate_results.csv",
+        default=RESULTS_DIR / "results.csv",
     )
     parser.add_argument("--data-dir", type=Path, default=ROOT_DIR / "data")
     parser.add_argument(
         "--output", type=Path,
-        default=ROOT_DIR / "results" / "surrogate_vs_portef.png",
+        default=RESULTS_DIR / "surrogate_vs_portef.png",
     )
     parser.add_argument("--pop-size", type=int, default=10)
     parser.add_argument("--pm", type=float, default=0.25)
